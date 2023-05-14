@@ -1,0 +1,18 @@
+{
+   "name": "WD14Tagger",
+   "logging": false,
+   "settings": {
+      "model": "wd-v1-4-convnextv2-tagger-v2",
+      "threshold": 0.35,
+      "character_threshold": 0.85,
+      "exclude_tags": ""
+   },
+   "models": [
+      {
+         "wd-v1-4-convnextv2-tagger-v2": "https://huggingface.co/SmilingWolf/wd-v1-4-convnextv2-tagger-v2",
+         "wd-v1-4-convnext-tagger-v2": "https://huggingface.co/SmilingWolf/wd-v1-4-convnext-tagger-v2",
+         "wd-v1-4-convnext-tagger": "https://huggingface.co/SmilingWolf/wd-v1-4-convnext-tagger",
+         "wd-v1-4-vit-tagger-v2": "https://huggingface.co/SmilingWolf/wd-v1-4-vit-tagger-v2"
+      }
+   ]
+}

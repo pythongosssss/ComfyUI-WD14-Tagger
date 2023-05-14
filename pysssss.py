@@ -1,0 +1,190 @@
+import asyncio
+import os
+import json
+import shutil
+import inspect
+import aiohttp
+from server import PromptServer
+from tqdm import tqdm
+
+config = None
+
+
+def is_logging_enabled():
+    config = get_extension_config()
+    if "logging" not in config:
+        return False
+    return config["logging"]
+
+
+def log(message, type=None, always=False):
+    if not always and not is_logging_enabled():
+        return
+
+    if type is not None:
+        message = f"[{type}] {message}"
+
+    name = get_extension_config()["name"]
+
+    print(f"(pysssss:{name}) {message}")
+
+
+def get_ext_dir(subpath=None, mkdir=False):
+    dir = os.path.dirname(__file__)
+    if subpath is not None:
+        dir = os.path.join(dir, subpath)
+
+    dir = os.path.abspath(dir)
+
+    if mkdir and not os.path.exists(dir):
+        os.makedirs(dir)
+    return dir
+
+
+def get_comfy_dir(subpath=None):
+    dir = os.path.dirname(inspect.getfile(PromptServer))
+    if subpath is not None:
+        dir = os.path.join(dir, subpath)
+
+    dir = os.path.abspath(dir)
+
+    return dir
+
+
+def get_web_ext_dir():
+    config = get_extension_config()
+    name = config["name"]
+    dir = get_comfy_dir("web\\extensions\\pysssss")
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+    dir += "\\" + name
+    return dir
+
+
+def get_extension_config(reload=False):
+    global config
+    if reload == False and config is not None:
+        return config
+
+    config_path = get_ext_dir("pysssss.json")
+    if not os.path.exists(config_path):
+        log("Missing pysssss.json, this extension may not work correctly. Please reinstall the extension.",
+            type="ERROR", always=True)
+        print(f"Extension path: {get_ext_dir()}")
+        return {"name": "Unknown", "version": -1}
+    with open(config_path, "r") as f:
+        config = json.loads(f.read())
+    return config
+
+
+def link_js(src, dst):
+    try:
+        os.symlink(src, dst)
+        return True
+    except:
+        return False
+
+
+def install_js():
+    src_dir = get_ext_dir("js")
+    if not os.path.exists(src_dir):
+        log("No JS")
+        return
+
+    dst_dir = get_web_ext_dir()
+
+    if os.path.exists(dst_dir):
+        if os.path.islink(dst_dir):
+            log("JS already linked")
+            return
+    elif link_js(src_dir, dst_dir):
+        log("JS linked")
+        return
+
+    log("Copying JS files")
+    shutil.copytree(src_dir, dst_dir, dirs_exist_ok=True)
+
+
+def init(check_imports):
+    log("Init")
+
+    if check_imports is not None:
+        import importlib.util
+        for imp in check_imports:
+            spec = importlib.util.find_spec(imp)
+            if spec is None:
+                log(f"{imp} is required, please check requirements are installed.", type="ERROR", always=True)
+                return False
+
+    install_js()
+    return True
+
+
+async def download_to_file(url, destination, update_callback, is_ext_subpath=True, session=None):
+    close_session = False
+    if session is None:
+        close_session = True
+        loop = None
+        try:
+            loop = asyncio.get_event_loop()
+        except:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+        session = aiohttp.ClientSession(loop=loop)
+    if is_ext_subpath:
+        destination = get_ext_dir(destination)
+    try:
+        async with session.get(url) as response:
+            size = int(response.headers.get('content-length', 0)) or None
+
+            with tqdm(
+                unit='B', unit_scale=True, miniters=1, desc=url.split('/')[-1], total=size,
+            ) as progressbar:
+                with open(destination, mode='wb') as f:
+                    perc = 0
+                    async for chunk in response.content.iter_chunked(2048):
+                        f.write(chunk)
+                        progressbar.update(len(chunk))
+                        if update_callback is not None and progressbar.total is not None and progressbar.total != 0:
+                            last = perc
+                            perc = round(progressbar.n / progressbar.total, 2)
+                            if perc != last:
+                                last = perc
+                                await update_callback(perc)
+    finally:
+        if close_session and session is not None:
+            await session.close()
+
+
+def wait_for_async(async_fn, loop=None):
+    res = []
+
+    async def run_async():
+        r = await async_fn()
+        res.append(r)
+
+    if loop is None:
+        try:
+            loop = asyncio.get_event_loop()
+        except:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+    loop.run_until_complete(run_async())
+
+    return res[0]
+
+
+async def update_node_status_async(client_id, node, text, progress=None):
+    if client_id is None:
+        client_id = PromptServer.instance.client_id
+
+    if client_id is None:
+        return
+
+    await PromptServer.instance.send("pysssss/update_status", {
+        "node": node,
+        "progress": progress,
+        "text": text
+    }, client_id)
