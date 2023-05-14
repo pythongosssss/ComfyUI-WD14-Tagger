@@ -1,6 +1,6 @@
 # ComfyUI WD 1.4 Tagger
 
-A [ComfyUI](https://github.com/comfyanonymous/ComfyUI) custom extension allowing the interrogation of booru tags from images.
+A [ComfyUI](https://github.com/comfyanonymous/ComfyUI) extension allowing the interrogation of booru tags from images.
 
 Based on [SmilingWolf/wd-v1-4-tags](https://huggingface.co/spaces/SmilingWolf/wd-v1-4-tags) and [toriato/stable-diffusion-webui-wd14-tagger](https://github.com/toriato/stable-diffusion-webui-wd14-tagger)  
 All models created by [SmilingWolf](https://huggingface.co/SmilingWolf)
