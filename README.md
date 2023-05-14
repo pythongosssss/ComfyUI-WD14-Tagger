@@ -8,13 +8,13 @@ All models created by [SmilingWolf](https://huggingface.co/SmilingWolf)
 ## Installation
 1. `git clone https://github.com/pythongosssss/ComfyUI-WD14-Tagger` into the `custom_nodes` folder 
     - e.g. `custom_nodes\ComfyUI-WD14-Tagger`  
-2. Open a Command Prompt/Terminal/PowerShell/etc
+2. Open a Command Prompt/Terminal/etc
 3. Change to the `custom_nodes\ComfyUI-WD14-Tagger` folder you just created 
     - e.g. `cd C:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-WD14-Tagger` or wherever you have it installed
 4.  Install python packages
-      - **Standalone installation** (embedded python):   
+      - **Windows Standalone installation** (embedded python):   
        `../../../python_embeded/python.exe -s -m pip install -r requirements.txt`  
-      - **Manual installation** (global python or some other manual setup)  
+      - **Manual/non-Windows installation**   
         `pip install -r requirement.txt`
 
 ## Usage
