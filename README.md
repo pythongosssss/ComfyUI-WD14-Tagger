@@ -18,8 +18,11 @@ All models created by [SmilingWolf](https://huggingface.co/SmilingWolf)
         `pip install -r requirement.txt`
 
 ## Usage
-Add the node via `image` -> `WD14Tagger.pys`  
-Models are automatically downloaded at runtime if missing.
+Add the node via `image` -> `pysssss.WD14Tagger`  
+![image](https://github.com/pythongosssss/ComfyUI-WD14-Tagger/assets/125205205/ee6756ae-73f6-4e9f-a3da-eb87a056eb87)  
+Models are automatically downloaded at runtime if missing.  
+![image](https://github.com/pythongosssss/ComfyUI-WD14-Tagger/assets/125205205/cc09ae71-1a38-44da-afec-90f470a4b47d)  
+Supports tagging and outputting multiple batched inputs.  
 - **model**: The interrogation model to use, the most popular is [wd-v1-4-convnextv2-tagger-v2](https://huggingface.co/SmilingWolf/wd-v1-4-convnextv2-tagger-v2).  
   Supports ratings, characters and general tags.
 - **threshold**: The score for the tag to be considered valid
@@ -27,7 +30,9 @@ Models are automatically downloaded at runtime if missing.
 - **exclude_tags** A comma separated list of tags that should not be included in the results
 
 Quick interrogation of images is also available on any node that is displaying an image, e.g. a `LoadImage`, `SaveImage`, `PreviewImage` node.  
-Simply right click on the node (or if displaying multiple images, on the image you want to interrogate) and select `WD14 Tagger` from the menu
+Simply right click on the node (or if displaying multiple images, on the image you want to interrogate) and select `WD14 Tagger` from the menu  
+![image](https://github.com/pythongosssss/ComfyUI-WD14-Tagger/assets/125205205/11733899-6163-49f6-a22b-8dd86d910de6)
+
 Settings used for this are in the `settings` section of `pysssss.json`.
 
 ### Offline Use
@@ -40,3 +45,6 @@ Simplest way is to use it online, interrogate an image, and the model will be do
 ## Requirements
 `onnxruntime` (recommended, interrogation is still fast on CPU, included in requirements.txt)  
 or `onnxruntime-gpu` (allows use of GPU, many people have issues with this, if you try I can't provide support for this)
+
+## Changelog
+- 2023-05-14 - Moved to own repo, add downloading models, support multiple inputs
