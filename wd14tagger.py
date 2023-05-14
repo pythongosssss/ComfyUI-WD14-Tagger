@@ -1,16 +1,19 @@
 # https://huggingface.co/spaces/SmilingWolf/wd-v1-4-tags
 
+import comfy.utils
 import asyncio
 import aiohttp
 import numpy as np
 import csv
 import os
+import sys
 import onnxruntime as ort
 from onnxruntime import InferenceSession
 from PIL import Image
 from server import PromptServer
 from aiohttp import web
-from .pysssss import get_ext_dir, get_comfy_dir, download_to_file, update_node_status_async, wait_for_async, get_extension_config
+from .pysssss import get_ext_dir, get_comfy_dir, download_to_file, update_node_status, wait_for_async, get_extension_config
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy"))
 
 
 config = get_extension_config()
@@ -97,14 +100,14 @@ async def download_model(model, client_id, node):
             message = ""
             if perc < 100:
                 message = f"Downloading {model}"
-            await update_node_status_async(client_id, node, message, perc)
+            update_node_status(client_id, node, message, perc)
 
         await download_to_file(
             f"{url}model.onnx", f"models\\{model}.onnx", update_callback, session=session)
         await download_to_file(
             f"{url}selected_tags.csv", f"models\\{model}.csv", update_callback, session=session)
 
-        await update_node_status_async(client_id, node, None)
+        update_node_status(client_id, node, None)
 
     return web.Response(status=200)
 
@@ -148,6 +151,7 @@ class WD14Tagger:
         }}
 
     RETURN_TYPES = ("STRING",)
+    OUTPUT_IS_LIST = (True,)
     FUNCTION = "tag"
     OUTPUT_NODE = True
 
@@ -156,19 +160,14 @@ class WD14Tagger:
     def tag(self, image, model, threshold, character_threshold, exclude_tags=""):
         tensor = image*255
         tensor = np.array(tensor, dtype=np.uint8)
-        if tensor.shape[0] == 1:
-            image = Image.fromarray(tensor[0])
-            res = wait_for_async(lambda: tag(image, model, threshold, character_threshold, exclude_tags))
-            return {"ui": {"tags": res}, "result": (res,)}
 
-        res = ""
+        pbar = comfy.utils.ProgressBar(tensor.shape[0])
+        tags = []
         for i in range(tensor.shape[0]):
             image = Image.fromarray(tensor[i])
-            if i > 0:
-                res += "\n\n"
-            res += f"[image {i+1}]\n"
-            res += wait_for_async(lambda: tag(image, model, threshold, character_threshold, exclude_tags))
-        return {"ui": {"tags": res}, "result": (res,)}
+            tags.append(wait_for_async(lambda: tag(image, model, threshold, character_threshold, exclude_tags)))
+            pbar.update(1)
+        return {"ui": {"tags": tags}, "result": (tags,)}
 
 
 NODE_CLASS_MAPPINGS = {

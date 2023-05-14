@@ -175,6 +175,18 @@ def wait_for_async(async_fn, loop=None):
 
     return res[0]
 
+def update_node_status(client_id, node, text, progress=None):
+    if client_id is None:
+        client_id = PromptServer.instance.client_id
+
+    if client_id is None:
+        return
+
+    PromptServer.instance.send_sync("pysssss/update_status", {
+        "node": node,
+        "progress": progress,
+        "text": text
+    }, client_id)
 
 async def update_node_status_async(client_id, node, text, progress=None):
     if client_id is None:
