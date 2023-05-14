@@ -171,8 +171,8 @@ class WD14Tagger:
 
 
 NODE_CLASS_MAPPINGS = {
-    "pysssssWD14Tagger": WD14Tagger,
+    "WD14Tagger|pysssss": WD14Tagger,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "pysssssWD14Tagger": "WD14 Tagger 🐍",
+    "WD14Tagger|pysssss": "WD14 Tagger 🐍",
 }

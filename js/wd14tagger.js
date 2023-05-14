@@ -80,7 +80,7 @@ app.registerExtension({
 	async beforeRegisterNodeDef(nodeType, nodeData, app) {
 		pysssss.addStatusTagHandler(nodeType);
 
-		if (nodeData.name === "pysssssWD14Tagger") {
+		if (nodeData.name === "WD14Tagger|pysssss") {
 			const onExecuted = nodeType.prototype.onExecuted;
 			nodeType.prototype.onExecuted = function (message) {
 				const r = onExecuted?.apply?.(this, arguments);

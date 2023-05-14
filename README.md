@@ -18,7 +18,7 @@ All models created by [SmilingWolf](https://huggingface.co/SmilingWolf)
         `pip install -r requirement.txt`
 
 ## Usage
-Add the node via `image` -> `pysssss.WD14Tagger`  
+Add the node via `image` -> `WD14Tagger|pysssss`  
 ![image](https://github.com/pythongosssss/ComfyUI-WD14-Tagger/assets/125205205/ee6756ae-73f6-4e9f-a3da-eb87a056eb87)  
 Models are automatically downloaded at runtime if missing.  
 ![image](https://github.com/pythongosssss/ComfyUI-WD14-Tagger/assets/125205205/cc09ae71-1a38-44da-afec-90f470a4b47d)  
