@@ -54,10 +54,10 @@ def get_comfy_dir(subpath=None):
 def get_web_ext_dir():
     config = get_extension_config()
     name = config["name"]
-    dir = get_comfy_dir("web\\extensions\\pysssss")
+    dir = get_comfy_dir("web/extensions/pysssss")
     if not os.path.exists(dir):
         os.makedirs(dir)
-    dir += "\\" + name
+    dir += "/" + name
     return dir
 
 
