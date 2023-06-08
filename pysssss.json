@@ -2,7 +2,7 @@
    "name": "WD14Tagger",
    "logging": false,
    "settings": {
-      "model": "wd-v1-4-convnextv2-tagger-v2",
+      "model": "wd-v1-4-moat-tagger-v2",
       "threshold": 0.35,
       "character_threshold": 0.85,
       "exclude_tags": ""
