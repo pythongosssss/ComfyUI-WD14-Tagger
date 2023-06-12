@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "co
 config = get_extension_config()
 
 defaults = {
-    "model": "wd-v1-4-convnext-tagger-v2",
+    "model": "wd-v1-4-moat-tagger-v2",
     "threshold": 0.35,
     "character_threshold": 0.85,
     "exclude_tags": ""
@@ -27,7 +27,8 @@ defaults = {
 defaults.update(config.get("settings", {}))
 
 models_dir = get_ext_dir("models", mkdir=True)
-all_models = ("wd-v1-4-convnext-tagger-v2", "wd-v1-4-convnext-tagger",
+all_models = ("wd-v1-4-moat-tagger-v2", 
+              "wd-v1-4-convnext-tagger-v2", "wd-v1-4-convnext-tagger",
               "wd-v1-4-convnextv2-tagger-v2", "wd-v1-4-vit-tagger-v2")
 
 
