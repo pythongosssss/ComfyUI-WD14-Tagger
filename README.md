@@ -23,7 +23,7 @@ Add the node via `image` -> `WD14Tagger|pysssss`
 Models are automatically downloaded at runtime if missing.  
 ![image](https://github.com/pythongosssss/ComfyUI-WD14-Tagger/assets/125205205/cc09ae71-1a38-44da-afec-90f470a4b47d)  
 Supports tagging and outputting multiple batched inputs.  
-- **model**: The interrogation model to use, all most popular [WaifuDiffusion v1.4 Tags](https://huggingface.co/spaces/SmilingWolf/wd-v1-4-tags).  
+- **model**: The interrogation model to use. You can try them out here [WaifuDiffusion v1.4 Tags](https://huggingface.co/spaces/SmilingWolf/wd-v1-4-tags). The newest model (as of writing) is `MOAT` and the most popular is `ConvNextV2`.  
   Supports ratings, characters and general tags.
 - **threshold**: The score for the tag to be considered valid
 - **character_threshold**: The score for the character tag to be considered valid
