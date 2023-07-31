@@ -52,7 +52,7 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
     # Reduce to max size and pad with white
     ratio = float(height)/max(image.size)
     new_size = tuple([int(x*ratio) for x in image.size])
-    image = image.resize(new_size, Image.ANTIALIAS)
+    image = image.resize(new_size, Image.LANCZOS)
     square = Image.new("RGB", (height, height), (255, 255, 255))
     square.paste(image, ((height-new_size[0])//2, (height-new_size[1])//2))
 
