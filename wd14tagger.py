@@ -107,7 +107,7 @@ async def download_model(model, client_id, node):
             f"{url}model.onnx", os.path.join("models",f"{model}.onnx"), update_callback, session=session)
         await download_to_file(
             f"{url}selected_tags.csv", os.path.join("models",f"{model}.csv"), update_callback, session=session)
-        
+
         update_node_status(client_id, node, None)
 
     return web.Response(status=200)
