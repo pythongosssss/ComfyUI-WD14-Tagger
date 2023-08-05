@@ -104,9 +104,9 @@ async def download_model(model, client_id, node):
             update_node_status(client_id, node, message, perc)
 
         await download_to_file(
-            f"{url}model.onnx", f"models\\{model}.onnx", update_callback, session=session)
+            f"{url}model.onnx", os.path.join("models",f"{model}.onnx"), update_callback, session=session)
         await download_to_file(
-            f"{url}selected_tags.csv", f"models\\{model}.csv", update_callback, session=session)
+            f"{url}selected_tags.csv", os.path.join("models",f"{model}.csv"), update_callback, session=session)
 
         update_node_status(client_id, node, None)
 
