@@ -15,7 +15,7 @@ All models created by [SmilingWolf](https://huggingface.co/SmilingWolf)
       - **Windows Standalone installation** (embedded python):   
        `../../../python_embeded/python.exe -s -m pip install -r requirements.txt`  
       - **Manual/non-Windows installation**   
-        `pip install -r requirement.txt`
+        `pip install -r requirements.txt`
 
 ## Usage
 Add the node via `image` -> `WD14Tagger|pysssss`  
