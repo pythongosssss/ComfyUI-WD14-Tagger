@@ -87,7 +87,7 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
     remove = [s.strip() for s in exclude_tags.lower().split(",")]
     all = [tag for tag in all if tag[0] not in remove]
 
-    res = ", ".join((item[0].replace("(", "\\(").replace(")", "\\)") for item in all))
+    res = "".join((item[0].replace("(", "\\(").replace(")", "\\)") + ", " for item in all))
 
     print(res)
     return res
