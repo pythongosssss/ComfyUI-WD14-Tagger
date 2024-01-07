@@ -72,7 +72,7 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
                 general_index = reader.line_num - 2
             elif character_index is None and row[2] == "4":
                 character_index = reader.line_num - 2
-            tags.append(row[1])
+            tags.append(row[1].replace("_", " "))
 
     label_name = model.get_outputs()[0].name
     probs = model.run([label_name], {input.name: image})[0]
@@ -87,7 +87,7 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
     remove = [s.strip() for s in exclude_tags.lower().split(",")]
     all = [tag for tag in all if tag[0] not in remove]
 
-    res = "".join((item[0].replace("(", "\\(").replace(")", "\\)").replace("_", " ") + ", " for item in all))
+    res = "".join((item[0].replace("(", "\\(").replace(")", "\\)") + ", " for item in all))
 
     print(res)
     return res
