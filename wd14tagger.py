@@ -34,7 +34,7 @@ all_models = ("wd-v1-4-moat-tagger-v2",
 
 
 def get_installed_models():
-    return [x for x in os.listdir(models_dir) if x.endswith(".onnx")]
+    return filter(lambda x: x.endswith(".onnx"), os.listdir(models_dir))
 
 
 async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclude_tags="", replace_underline=True, client_id=None, node=None):
