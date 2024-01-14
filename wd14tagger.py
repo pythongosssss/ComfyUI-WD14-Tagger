@@ -22,6 +22,7 @@ defaults = {
     "model": "wd-v1-4-moat-tagger-v2",
     "threshold": 0.35,
     "character_threshold": 0.85,
+    "replace_underline": True,
     "exclude_tags": ""
 }
 defaults.update(config.get("settings", {}))
@@ -36,7 +37,7 @@ def get_installed_models():
     return filter(lambda x: x.endswith(".onnx"), os.listdir(models_dir))
 
 
-async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclude_tags="", client_id=None, node=None):
+async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclude_tags="", replace_underline=True, client_id=None, node=None):
     if model_name.endswith(".onnx"):
         model_name = model_name[0:-5]
     installed = list(get_installed_models())
@@ -72,7 +73,10 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
                 general_index = reader.line_num - 2
             elif character_index is None and row[2] == "4":
                 character_index = reader.line_num - 2
-            tags.append(row[1])
+            if replace_underline:
+                tags.append(row[1].replace("_", " "))
+            else:
+                tags.append(row[1])
 
     label_name = model.get_outputs()[0].name
     probs = model.run([label_name], {input.name: image})[0]
@@ -87,7 +91,7 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
     remove = [s.strip() for s in exclude_tags.lower().split(",")]
     all = [tag for tag in all if tag[0] not in remove]
 
-    res = ", ".join((item[0].replace("(", "\\(").replace(")", "\\)") for item in all))
+    res = "".join((item[0].replace("(", "\\(").replace(")", "\\)") + ", " for item in all))
 
     print(res)
     return res
@@ -148,6 +152,7 @@ class WD14Tagger:
             "model": (all_models, ),
             "threshold": ("FLOAT", {"default": defaults["threshold"], "min": 0.0, "max": 1, "step": 0.05}),
             "character_threshold": ("FLOAT", {"default": defaults["character_threshold"], "min": 0.0, "max": 1, "step": 0.05}),
+            "replace_underline": ("BOOLEAN", {"default": defaults["replace_underline"]}),
             "exclude_tags": ("STRING", {"default": defaults["exclude_tags"]}),
         }}
 
@@ -158,7 +163,7 @@ class WD14Tagger:
 
     CATEGORY = "image"
 
-    def tag(self, image, model, threshold, character_threshold, exclude_tags=""):
+    def tag(self, image, model, threshold, character_threshold, exclude_tags="", replace_underline=True):
         tensor = image*255
         tensor = np.array(tensor, dtype=np.uint8)
 
@@ -166,7 +171,7 @@ class WD14Tagger:
         tags = []
         for i in range(tensor.shape[0]):
             image = Image.fromarray(tensor[i])
-            tags.append(wait_for_async(lambda: tag(image, model, threshold, character_threshold, exclude_tags)))
+            tags.append(wait_for_async(lambda: tag(image, model, threshold, character_threshold, exclude_tags, replace_underline)))
             pbar.update(1)
         return {"ui": {"tags": tags}, "result": (tags,)}
 
