@@ -14,7 +14,7 @@ from server import PromptServer
 from aiohttp import web
 from .pysssss import get_ext_dir, get_comfy_dir, download_to_file, update_node_status, wait_for_async, get_extension_config
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy"))
-
+import folder_paths
 
 config = get_extension_config()
 
@@ -29,10 +29,12 @@ defaults = {
 defaults.update(config.get("settings", {}))
 
 models_dir = get_ext_dir("models", mkdir=True)
-all_models = ("wd-v1-4-moat-tagger-v2", 
-              "wd-v1-4-convnext-tagger-v2", "wd-v1-4-convnext-tagger",
-              "wd-v1-4-convnextv2-tagger-v2", "wd-v1-4-vit-tagger-v2")
+models_comfy_dir = os.path.join(folder_paths.models_dir, "WD14")
 
+folder_paths.folder_names_and_paths["WD14"] = ([models_dir], [".onnx"])
+folder_paths.folder_names_and_paths["WD14_comfy"] = ([models_comfy_dir], [".onnx"])
+
+all_models = folder_paths.get_filename_list("WD14") + folder_paths.get_filename_list("WD14_comfy")
 
 def get_installed_models():
     return filter(lambda x: x.endswith(".onnx"), os.listdir(models_dir))
