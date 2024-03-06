@@ -12,6 +12,7 @@ from onnxruntime import InferenceSession
 from PIL import Image
 from server import PromptServer
 from aiohttp import web
+import folder_paths
 from .pysssss import get_ext_dir, get_comfy_dir, download_to_file, update_node_status, wait_for_async, get_extension_config
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy"))
 
@@ -28,9 +29,12 @@ defaults = {
 }
 defaults.update(config.get("settings", {}))
 
-models_dir = get_ext_dir("models", mkdir=True)
+if 'wd14_tagger' in folder_paths.folder_names_and_paths:
+    models_dir = folder_paths.get_folder_paths("wd14_tagger")[0]
+else:
+    models_dir = get_ext_dir("models", mkdir=True)
 all_models = ("wd-v1-4-moat-tagger-v2", 
-              "wd-v1-4-convnext-tagger-v2", "wd-v1-4-convnext-tagger",
+              "wd-v1-4-convnext-tagger-v2", "wd-v1-4-swinv2-tagger-v2",
               "wd-v1-4-convnextv2-tagger-v2", "wd-v1-4-vit-tagger-v2")
 
 
