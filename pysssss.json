@@ -5,7 +5,8 @@
 		"model": "wd-v1-4-moat-tagger-v2",
 		"threshold": 0.35,
 		"character_threshold": 0.85,
-		"exclude_tags": ""
+		"exclude_tags": "",
+		"ortProviders": ["CUDAExecutionProvider", "CPUExecutionProvider"]
 	},
 	"models": {
 		"wd-vit-tagger-v3": "https://huggingface.co/SmilingWolf/wd-vit-tagger-v3",

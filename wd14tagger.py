@@ -13,7 +13,7 @@ from PIL import Image
 from server import PromptServer
 from aiohttp import web
 import folder_paths
-from .pysssss import get_ext_dir, get_comfy_dir, download_to_file, update_node_status, wait_for_async, get_extension_config
+from .pysssss import get_ext_dir, get_comfy_dir, download_to_file, update_node_status, wait_for_async, get_extension_config, log
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy"))
 
 config = get_extension_config()
@@ -24,7 +24,8 @@ defaults = {
     "character_threshold": 0.85,
     "replace_underscore": False,
     "trailing_comma": False,
-    "exclude_tags": ""
+    "exclude_tags": "",
+    "ortProviders": ["CUDAExecutionProvider", "CPUExecutionProvider"]
 }
 defaults.update(config.get("settings", {}))
 
@@ -36,6 +37,8 @@ else:
     models_dir = get_ext_dir("models", mkdir=True)
 known_models = list(config["models"].keys())
 
+log("Available ORT providers: " + ", ".join(ort.get_available_providers()), "DEBUG", True)
+log("Using ORT providers: " + ", ".join(defaults["ortProviders"]), "DEBUG", True)
 
 def get_installed_models():
     models = filter(lambda x: x.endswith(".onnx"), os.listdir(models_dir))
@@ -51,7 +54,7 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
         await download_model(model_name, client_id, node)
 
     name = os.path.join(models_dir, model_name + ".onnx")
-    model = InferenceSession(name, providers=ort.get_available_providers())
+    model = InferenceSession(name, providers=defaults["ortProviders"])
 
     input = model.get_inputs()[0]
     height = input.shape[1]
