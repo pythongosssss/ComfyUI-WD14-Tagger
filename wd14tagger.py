@@ -34,8 +34,9 @@ if 'wd14_tagger' in folder_paths.folder_names_and_paths:
 else:
     models_dir = get_ext_dir("models", mkdir=True)
 all_models = ("wd-v1-4-moat-tagger-v2", 
-              "wd-v1-4-convnext-tagger-v2", "wd-v1-4-swinv2-tagger-v2",
-              "wd-v1-4-convnextv2-tagger-v2", "wd-v1-4-vit-tagger-v2")
+              "wd-v1-4-convnext-tagger-v2", "wd-v1-4-convnext-tagger",
+              "wd-v1-4-convnextv2-tagger-v2", "wd-v1-4-vit-tagger-v2",
+              "wd-v1-4-swinv2-tagger-v2")
 
 
 def get_installed_models():
