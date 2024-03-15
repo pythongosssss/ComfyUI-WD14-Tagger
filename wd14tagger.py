@@ -16,7 +16,6 @@ import folder_paths
 from .pysssss import get_ext_dir, get_comfy_dir, download_to_file, update_node_status, wait_for_async, get_extension_config
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy"))
 
-
 config = get_extension_config()
 
 defaults = {
@@ -33,11 +32,13 @@ if "wd14_tagger" in folder_paths.folder_names_and_paths:
     models_dir = folder_paths.get_folder_paths("wd14_tagger")[0]
 else:
     models_dir = get_ext_dir("models", mkdir=True)
-all_models = list(config["models"].keys())
+known_models = list(config["models"].keys())
 
 
 def get_installed_models():
-    return filter(lambda x: x.endswith(".onnx"), os.listdir(models_dir))
+    models = filter(lambda x: x.endswith(".onnx"), os.listdir(models_dir))
+    models = [m for m in models if os.path.exists(os.path.join(models_dir, os.path.splitext(m)[0] + ".csv"))]
+    return models
 
 
 async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclude_tags="", replace_underscore=True, trailing_comma=False, client_id=None, node=None):
@@ -150,9 +151,11 @@ async def get_tags(request):
 class WD14Tagger:
     @classmethod
     def INPUT_TYPES(s):
+        extra = [name for name, _ in (os.path.splitext(m) for m in get_installed_models()) if name not in known_models]
+        models = known_models + extra
         return {"required": {
             "image": ("IMAGE", ),
-            "model": (all_models, ),
+            "model": (models, { "default": defaults["model"] }),
             "threshold": ("FLOAT", {"default": defaults["threshold"], "min": 0.0, "max": 1, "step": 0.05}),
             "character_threshold": ("FLOAT", {"default": defaults["character_threshold"], "min": 0.0, "max": 1, "step": 0.05}),
             "replace_underscore": ("BOOLEAN", {"default": defaults["replace_underscore"]}),
