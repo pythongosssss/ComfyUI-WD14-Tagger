@@ -30,6 +30,8 @@ defaults.update(config.get("settings", {}))
 
 if "wd14_tagger" in folder_paths.folder_names_and_paths:
     models_dir = folder_paths.get_folder_paths("wd14_tagger")[0]
+    if not os.path.exists(models_dir):
+        os.makedirs(models_dir)
 else:
     models_dir = get_ext_dir("models", mkdir=True)
 known_models = list(config["models"].keys())
