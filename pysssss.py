@@ -66,9 +66,12 @@ def get_extension_config(reload=False):
     if reload == False and config is not None:
         return config
 
-    config_path = get_ext_dir("pysssss.json")
+    config_path = get_ext_dir("pysssss.user.json")
     if not os.path.exists(config_path):
-        log("Missing pysssss.json, this extension may not work correctly. Please reinstall the extension.",
+        config_path = get_ext_dir("pysssss.json")
+
+    if not os.path.exists(config_path):
+        log("Missing pysssss.json and pysssss.user.json, this extension may not work correctly. Please reinstall the extension.",
             type="ERROR", always=True)
         print(f"Extension path: {get_ext_dir()}")
         return {"name": "Unknown", "version": -1}

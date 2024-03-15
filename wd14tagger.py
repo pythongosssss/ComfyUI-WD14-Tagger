@@ -29,14 +29,11 @@ defaults = {
 }
 defaults.update(config.get("settings", {}))
 
-if 'wd14_tagger' in folder_paths.folder_names_and_paths:
+if "wd14_tagger" in folder_paths.folder_names_and_paths:
     models_dir = folder_paths.get_folder_paths("wd14_tagger")[0]
 else:
     models_dir = get_ext_dir("models", mkdir=True)
-all_models = ("wd-v1-4-moat-tagger-v2", 
-              "wd-v1-4-convnext-tagger-v2", "wd-v1-4-convnext-tagger",
-              "wd-v1-4-convnextv2-tagger-v2", "wd-v1-4-vit-tagger-v2",
-              "wd-v1-4-swinv2-tagger-v2")
+all_models = list(config["models"].keys())
 
 
 def get_installed_models():
@@ -104,7 +101,7 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
 
 
 async def download_model(model, client_id, node):
-    url = f"https://huggingface.co/SmilingWolf/{model}/resolve/main/"
+    url = f"{config["models"][model]}/resolve/main/"
     async with aiohttp.ClientSession(loop=asyncio.get_event_loop()) as session:
         async def update_callback(perc):
             nonlocal client_id
