@@ -104,7 +104,8 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
 
 
 async def download_model(model, client_id, node):
-    url = f"{config["models"][model]}/resolve/main/"
+    url = config["models"][model]
+    url = f"{url}/resolve/main/"
     async with aiohttp.ClientSession(loop=asyncio.get_event_loop()) as session:
         async def update_callback(perc):
             nonlocal client_id
