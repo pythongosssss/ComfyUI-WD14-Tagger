@@ -149,7 +149,8 @@ async def get_tags(request):
     image = Image.open(image_path)
 
     models = get_installed_models()
-    model = next(models, defaults["model"])
+    default = defaults["model"] + ".onnx"
+    model = default if default in models else models[0]
 
     return web.json_response(await tag(image, model, client_id=request.rel_url.query.get("clientId", ""), node=request.rel_url.query.get("node", "")))
 
