@@ -6,18 +6,19 @@
 		"threshold": 0.35,
 		"character_threshold": 0.85,
 		"exclude_tags": "",
-		"ortProviders": ["CUDAExecutionProvider", "CPUExecutionProvider"]
+		"ortProviders": ["CUDAExecutionProvider", "CPUExecutionProvider"],
+		"HF_ENDPOINT": "https://huggingface.co"
 	},
 	"models": {
-		"wd-vit-tagger-v3": "https://huggingface.co/SmilingWolf/wd-vit-tagger-v3",
-		"wd-swinv2-tagger-v3": "https://huggingface.co/SmilingWolf/wd-swinv2-tagger-v3",
-		"wd-convnext-tagger-v3": "https://huggingface.co/SmilingWolf/wd-convnext-tagger-v3",
-		"wd-v1-4-moat-tagger-v2": "https://huggingface.co/SmilingWolf/wd-v1-4-moat-tagger-v2",
-		"wd-v1-4-convnextv2-tagger-v2": "https://huggingface.co/SmilingWolf/wd-v1-4-convnextv2-tagger-v2",
-		"wd-v1-4-convnext-tagger-v2": "https://huggingface.co/SmilingWolf/wd-v1-4-convnext-tagger-v2",
-		"wd-v1-4-convnext-tagger": "https://huggingface.co/SmilingWolf/wd-v1-4-convnext-tagger",
-		"wd-v1-4-vit-tagger-v2": "https://huggingface.co/SmilingWolf/wd-v1-4-vit-tagger-v2",
-		"wd-v1-4-swinv2-tagger-v2": "https://huggingface.co/SmilingWolf/wd-v1-4-swinv2-tagger-v2",
-		"wd-v1-4-vit-tagger": "https://huggingface.co/SmilingWolf/wd-v1-4-vit-tagger"
+		"wd-vit-tagger-v3": "{HF_ENDPOINT}/SmilingWolf/wd-vit-tagger-v3",
+		"wd-swinv2-tagger-v3": "{HF_ENDPOINT}/SmilingWolf/wd-swinv2-tagger-v3",
+		"wd-convnext-tagger-v3": "{HF_ENDPOINT}/SmilingWolf/wd-convnext-tagger-v3",
+		"wd-v1-4-moat-tagger-v2": "{HF_ENDPOINT}/SmilingWolf/wd-v1-4-moat-tagger-v2",
+		"wd-v1-4-convnextv2-tagger-v2": "{HF_ENDPOINT}/SmilingWolf/wd-v1-4-convnextv2-tagger-v2",
+		"wd-v1-4-convnext-tagger-v2": "{HF_ENDPOINT}/SmilingWolf/wd-v1-4-convnext-tagger-v2",
+		"wd-v1-4-convnext-tagger": "{HF_ENDPOINT}/SmilingWolf/wd-v1-4-convnext-tagger",
+		"wd-v1-4-vit-tagger-v2": "{HF_ENDPOINT}/SmilingWolf/wd-v1-4-vit-tagger-v2",
+		"wd-v1-4-swinv2-tagger-v2": "{HF_ENDPOINT}/SmilingWolf/wd-v1-4-swinv2-tagger-v2",
+		"wd-v1-4-vit-tagger": "{HF_ENDPOINT}/SmilingWolf/wd-v1-4-vit-tagger"
 	}
 }

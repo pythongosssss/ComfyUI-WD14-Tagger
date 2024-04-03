@@ -25,7 +25,8 @@ defaults = {
     "replace_underscore": False,
     "trailing_comma": False,
     "exclude_tags": "",
-    "ortProviders": ["CUDAExecutionProvider", "CPUExecutionProvider"]
+    "ortProviders": ["CUDAExecutionProvider", "CPUExecutionProvider"],
+    "HF_ENDPOINT": "https://huggingface.co"
 }
 defaults.update(config.get("settings", {}))
 
@@ -107,7 +108,14 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
 
 
 async def download_model(model, client_id, node):
+    hf_endpoint = os.getenv("HF_ENDPOINT", defaults["HF_ENDPOINT"])
+    if not hf_endpoint.startswith("https://"):
+        hf_endpoint = f"https://{hf_endpoint}"
+    if hf_endpoint.endswith("/"):
+        hf_endpoint = hf_endpoint.rstrip("/")
+
     url = config["models"][model]
+    url = url.replace("{HF_ENDPOINT}", hf_endpoint)
     url = f"{url}/resolve/main/"
     async with aiohttp.ClientSession(loop=asyncio.get_event_loop()) as session:
         async def update_callback(perc):
@@ -117,10 +125,14 @@ async def download_model(model, client_id, node):
                 message = f"Downloading {model}"
             update_node_status(client_id, node, message, perc)
 
-        await download_to_file(
-            f"{url}model.onnx", os.path.join(models_dir,f"{model}.onnx"), update_callback, session=session)
-        await download_to_file(
-            f"{url}selected_tags.csv", os.path.join(models_dir,f"{model}.csv"), update_callback, session=session)
+        try:
+            await download_to_file(
+                f"{url}model.onnx", os.path.join(models_dir,f"{model}.onnx"), update_callback, session=session)
+            await download_to_file(
+                f"{url}selected_tags.csv", os.path.join(models_dir,f"{model}.csv"), update_callback, session=session)
+        except aiohttp.client_exceptions.ClientConnectorError as err:
+            log("Unable to download model. Download files manually or try using a HF mirror/proxy website by setting the environment variable HF_ENDPOINT=https://.....", "ERROR", True)
+            raise
 
         update_node_status(client_id, node, None)
 
