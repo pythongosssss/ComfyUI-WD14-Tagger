@@ -1,0 +1,15 @@
+[project]
+name = "pr-comfyui-wd14-tagger-a611b981"
+description = ""
+version = "1.0.0"
+license = "LICENSE"
+dependencies = ["onnxruntime"]
+
+[project.urls]
+Repository = "https://github.com/haohaocreates/PR-ComfyUI-WD14-Tagger-a611b981"
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "PR-ComfyUI-WD14-Tagger-a611b981"
+Icon = ""
+Models = [{location = "/checkpoints/model.safetensor", model_url = "https://example.com/model.zip"}]
