@@ -1,6 +1,6 @@
-import { app } from "/scripts/app.js";
-import { ComfyWidgets } from "/scripts/widgets.js";
-import { api } from "/scripts/api.js";
+import { app } from "../../../scripts/app.js";
+import { ComfyWidgets } from "../../../scripts/widgets.js";
+import { api } from "../../../scripts/api.js";
 
 class Pysssss {
 	constructor() {
