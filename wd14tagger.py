@@ -47,7 +47,7 @@ def get_installed_models():
     return models
 
 
-async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclude_tags="", replace_underscore=True, trailing_comma=False, client_id=None, node=None):
+async def tag(batch, model_name, threshold=0.35, character_threshold=0.85, exclude_tags="", replace_underscore=True, trailing_comma=False, client_id=None, node=None):
     if model_name.endswith(".onnx"):
         model_name = model_name[0:-5]
     installed = list(get_installed_models())
@@ -60,16 +60,17 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
     input = model.get_inputs()[0]
     height = input.shape[1]
 
-    # Reduce to max size and pad with white
-    ratio = float(height)/max(image.size)
-    new_size = tuple([int(x*ratio) for x in image.size])
-    image = image.resize(new_size, Image.LANCZOS)
-    square = Image.new("RGB", (height, height), (255, 255, 255))
-    square.paste(image, ((height-new_size[0])//2, (height-new_size[1])//2))
+    for i in range(len(batch)):
+        # Reduce to max size and pad with white
+        ratio = float(height)/max(batch[i].size)
+        new_size = tuple([int(x*ratio) for x in batch[i].size])
+        batch[i] = batch[i].resize(new_size, Image.LANCZOS)
+        square = Image.new("RGB", (height, height), (255, 255, 255))
+        square.paste(batch[i], ((height-new_size[0])//2, (height-new_size[1])//2))
 
-    image = np.array(square).astype(np.float32)
-    image = image[:, :, ::-1]  # RGB -> BGR
-    image = np.expand_dims(image, 0)
+        batch[i] = np.array(square).astype(np.float32)
+        batch[i] = batch[i][:, :, ::-1]  # RGB -> BGR
+        batch[i] = np.expand_dims(batch[i], 0)
 
     # Read all tags from csv and locate start of each category
     tags = []
@@ -88,22 +89,32 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
             else:
                 tags.append(row[1])
 
+    # imgs = np.array([im for im in batch])
+
+    probs = []
     label_name = model.get_outputs()[0].name
-    probs = model.run([label_name], {input.name: image})[0]
+    for img in batch:
+        probs.append(model.run([label_name], {input.name: img})[0])
+    # probs = probs[: len(batch)]
+    # probs = model.run([label_name], {input.name: imgs})[0]
 
-    result = list(zip(tags, probs[0]))
+    # print(probs)
 
-    # rating = max(result[:general_index], key=lambda x: x[1])
-    general = [item for item in result[general_index:character_index] if item[1] > threshold]
-    character = [item for item in result[character_index:] if item[1] > character_threshold]
+    res = []
 
-    all = character + general
-    remove = [s.strip() for s in exclude_tags.lower().split(",")]
-    all = [tag for tag in all if tag[0] not in remove]
+    for i in range(len(batch)):
+        result = list(zip(tags, probs[i][0]))
 
-    res = ("" if trailing_comma else ", ").join((item[0].replace("(", "\\(").replace(")", "\\)") + (", " if trailing_comma else "") for item in all))
+        # rating = max(result[:general_index], key=lambda x: x[1])
+        general = [item for item in result[general_index:character_index] if item[1] > threshold]
+        character = [item for item in result[character_index:] if item[1] > character_threshold]
 
-    print(res)
+        all = character + general
+        remove = [s.strip() for s in exclude_tags.lower().split(",")]
+        all = [tag for tag in all if tag[0] not in remove]
+
+        res.append(("" if trailing_comma else ", ").join((item[0].replace("(", "\\(").replace(")", "\\)") + (", " if trailing_comma else "") for item in all)))
+
     return res
 
 
@@ -180,6 +191,7 @@ class WD14Tagger:
             "replace_underscore": ("BOOLEAN", {"default": defaults["replace_underscore"]}),
             "trailing_comma": ("BOOLEAN", {"default": defaults["trailing_comma"]}),
             "exclude_tags": ("STRING", {"default": defaults["exclude_tags"]}),
+            "batch_size": ("INT", {"default": 1, "min": 1, "max": 16}),
         }}
 
     RETURN_TYPES = ("STRING",)
@@ -189,16 +201,21 @@ class WD14Tagger:
 
     CATEGORY = "image"
 
-    def tag(self, image, model, threshold, character_threshold, exclude_tags="", replace_underscore=False, trailing_comma=False):
+    def tag(self, image, model, threshold, character_threshold, exclude_tags="", replace_underscore=False, trailing_comma=False, batch_size=1):
         tensor = image*255
         tensor = np.array(tensor, dtype=np.uint8)
 
         pbar = comfy.utils.ProgressBar(tensor.shape[0])
         tags = []
+        batch = []
         for i in range(tensor.shape[0]):
             image = Image.fromarray(tensor[i])
-            tags.append(wait_for_async(lambda: tag(image, model, threshold, character_threshold, exclude_tags, replace_underscore, trailing_comma)))
-            pbar.update(1)
+            batch.append(image)
+            if len(batch) == batch_size or i == tensor.shape[0] -1:
+                tags = tags + wait_for_async(lambda: tag(batch, model, threshold, character_threshold, exclude_tags, replace_underscore, trailing_comma))
+                pbar.update(len(batch))
+                batch = []
+        print(tags)
         return {"ui": {"tags": tags}, "result": (tags,)}
 
 
