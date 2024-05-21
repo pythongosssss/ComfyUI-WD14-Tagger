@@ -9,6 +9,6 @@ dependencies = ["onnxruntime"]
 Repository = "https://github.com/pythongosssss/ComfyUI-WD14-Tagger"
 
 [tool.comfy]
-PublisherId = ""
+PublisherId = "pythongosssss"
 DisplayName = "ComfyUI-WD14-Tagger"
 Icon = ""
