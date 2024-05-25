@@ -7,7 +7,6 @@ import numpy as np
 import csv
 import os
 import sys
-import hashlib
 import onnxruntime as ort
 from onnxruntime import InferenceSession
 from PIL import Image
