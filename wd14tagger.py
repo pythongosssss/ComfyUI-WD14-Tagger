@@ -117,7 +117,7 @@ async def download_model(model, client_id, node):
     url = config["models"][model]
     url = url.replace("{HF_ENDPOINT}", hf_endpoint)
     url = f"{url}/resolve/main/"
-    async with aiohttp.ClientSession(loop=asyncio.get_event_loop()) as session:
+    async with aiohttp.ClientSession(loop=asyncio.get_event_loop(), trust_env=True) as session:
         async def update_callback(perc):
             nonlocal client_id
             message = ""
