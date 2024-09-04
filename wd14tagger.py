@@ -245,6 +245,7 @@ class WD14TaggerOnly:
         }}
 
     RETURN_TYPES = ("STRING",)
+    OUTPUT_IS_LIST = (True,)
     FUNCTION = "tag"
 
     CATEGORY = "image"
