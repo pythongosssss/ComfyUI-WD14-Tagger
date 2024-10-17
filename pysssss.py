@@ -175,7 +175,7 @@ async def download_to_file(url, destination, update_callback, is_ext_subpath=Tru
     if is_ext_subpath:
         destination = get_ext_dir(destination)
     try:
-        async with session.get(url) as response:
+        async with session.get(url, proxy=os.getenv('http_proxy')) as response:
             size = int(response.headers.get('content-length', 0)) or None
 
             with tqdm(
