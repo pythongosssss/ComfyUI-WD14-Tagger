@@ -198,22 +198,7 @@ async def download_to_file(url, destination, update_callback, is_ext_subpath=Tru
 
 
 def wait_for_async(async_fn, loop=None):
-    res = []
-
-    async def run_async():
-        r = await async_fn()
-        res.append(r)
-
-    if loop is None:
-        try:
-            loop = asyncio.get_event_loop()
-        except:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-    loop.run_until_complete(run_async())
-
-    return res[0]
+    return asyncio.run(async_fn())
 
 def update_node_status(client_id, node, text, progress=None):
     if client_id is None:
