@@ -175,7 +175,13 @@ async def download_to_file(url, destination, update_callback, is_ext_subpath=Tru
     if is_ext_subpath:
         destination = get_ext_dir(destination)
     try:
-        async with session.get(url) as response:
+        proxy = os.getenv("HTTP_PROXY") or os.getenv("http_proxy")
+        print("proxy:", proxy)
+        proxy_auth = None
+        if proxy:
+            proxy_auth = aiohttp.BasicAuth(os.getenv("PROXY_USER", ""), os.getenv("PROXY_PASS", ""))
+
+        async with session.get(url, proxy=proxy, proxy_auth=proxy_auth) as response:            
             size = int(response.headers.get('content-length', 0)) or None
 
             with tqdm(
