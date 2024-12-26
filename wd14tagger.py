@@ -227,24 +227,6 @@ class WD14Tagger:
 
         return {"ui": {"tags": tags}, "result": (tags,)}
 
-    # def tag(self, image, model, threshold, character_threshold, exclude_tags="", replace_underscore=False, trailing_comma=False):
-    #     if not isinstance(image, list):
-    #         images = [image]
-    #     else:
-    #         images = image
-    #     pbar = comfy.utils.ProgressBar(len(images))
-    #     for image in images:
-    #         tensor = image*255
-    #         tensor = np.array(tensor, dtype=np.uint8)
-
-    #         tags = []
-    #         for i in range(tensor.shape[0]):
-    #             image = Image.fromarray(tensor[i])
-    #             tags.append(wait_for_async(lambda: tag(image, model, threshold, character_threshold, exclude_tags, replace_underscore, trailing_comma)))
-    #             pbar.update(1)
-    #     return {"ui": {"tags": tags}, "result": (tags,)}
-
-
 NODE_CLASS_MAPPINGS = {
     "WD14Tagger|pysssss": WD14Tagger,
 }
