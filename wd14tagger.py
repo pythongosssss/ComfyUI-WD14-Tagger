@@ -202,21 +202,47 @@ class WD14Tagger:
     CATEGORY = "image"
 
     def tag(self, image, model, threshold, character_threshold, exclude_tags="", replace_underscore=False, trailing_comma=False, batch_size=1):
-        tensor = image*255
-        tensor = np.array(tensor, dtype=np.uint8)
+        if not isinstance(image, list):
+            images = [image]
+        else:
+            images = image
 
-        pbar = comfy.utils.ProgressBar(tensor.shape[0])
+        pbar = comfy.utils.ProgressBar(len(images))
         tags = []
         batch = []
-        for i in range(tensor.shape[0]):
-            image = Image.fromarray(tensor[i])
-            batch.append(image)
-            if len(batch) == batch_size or i == tensor.shape[0] -1:
-                tags = tags + wait_for_async(lambda: tag(batch, model, threshold, character_threshold, exclude_tags, replace_underscore, trailing_comma))
-                pbar.update(len(batch))
-                batch = []
+
+        for image in images:
+            tensor = image*255
+            tensor = np.array(tensor, dtype=np.uint8)
+
+            for i in range(tensor.shape[0]):
+                image = Image.fromarray(tensor[i])
+                batch.append(image)
+                if len(batch) == batch_size or i == tensor.shape[0] -1:
+                    tags = tags + wait_for_async(lambda: tag(batch, model, threshold, character_threshold, exclude_tags, replace_underscore, trailing_comma))
+                    pbar.update(len(batch))
+                    batch = []
+
         print(tags)
+
         return {"ui": {"tags": tags}, "result": (tags,)}
+
+    # def tag(self, image, model, threshold, character_threshold, exclude_tags="", replace_underscore=False, trailing_comma=False):
+    #     if not isinstance(image, list):
+    #         images = [image]
+    #     else:
+    #         images = image
+    #     pbar = comfy.utils.ProgressBar(len(images))
+    #     for image in images:
+    #         tensor = image*255
+    #         tensor = np.array(tensor, dtype=np.uint8)
+
+    #         tags = []
+    #         for i in range(tensor.shape[0]):
+    #             image = Image.fromarray(tensor[i])
+    #             tags.append(wait_for_async(lambda: tag(image, model, threshold, character_threshold, exclude_tags, replace_underscore, trailing_comma)))
+    #             pbar.update(1)
+    #     return {"ui": {"tags": tags}, "result": (tags,)}
 
 
 NODE_CLASS_MAPPINGS = {
