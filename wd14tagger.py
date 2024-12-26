@@ -183,16 +183,21 @@ class WD14Tagger:
     def INPUT_TYPES(s):
         extra = [name for name, _ in (os.path.splitext(m) for m in get_installed_models()) if name not in known_models]
         models = known_models + extra
-        return {"required": {
-            "image": ("IMAGE", ),
-            "model": (models, { "default": defaults["model"] }),
-            "threshold": ("FLOAT", {"default": defaults["threshold"], "min": 0.0, "max": 1, "step": 0.05}),
-            "character_threshold": ("FLOAT", {"default": defaults["character_threshold"], "min": 0.0, "max": 1, "step": 0.05}),
-            "replace_underscore": ("BOOLEAN", {"default": defaults["replace_underscore"]}),
-            "trailing_comma": ("BOOLEAN", {"default": defaults["trailing_comma"]}),
-            "exclude_tags": ("STRING", {"default": defaults["exclude_tags"]}),
-            "batch_size": ("INT", {"default": 1, "min": 1, "max": 16}),
-        }}
+        return {
+            "required": {
+                "image": ("IMAGE", ),
+                "model": (models, { "default": defaults["model"] }),
+                "threshold": ("FLOAT", {"default": defaults["threshold"], "min": 0.0, "max": 1, "step": 0.05}),
+                "character_threshold": ("FLOAT", {"default": defaults["character_threshold"], "min": 0.0, "max": 1, "step": 0.05}),
+                "replace_underscore": ("BOOLEAN", {"default": defaults["replace_underscore"]}),
+                "trailing_comma": ("BOOLEAN", {"default": defaults["trailing_comma"]}),
+                "exclude_tags": ("STRING", {"default": defaults["exclude_tags"]}),
+
+            },
+            "optional": {
+                "batch_size": ("INT", {"default": 1, "min": 1, "max": 128}),
+            }
+        }
 
     RETURN_TYPES = ("STRING",)
     OUTPUT_IS_LIST = (True,)
