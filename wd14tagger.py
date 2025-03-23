@@ -1,6 +1,7 @@
 # https://huggingface.co/spaces/SmilingWolf/wd-v1-4-tags
 
 import comfy.utils
+import comfy.model_management
 import asyncio
 import aiohttp
 import numpy as np
@@ -10,9 +11,11 @@ import sys
 import onnxruntime as ort
 from onnxruntime import InferenceSession
 from PIL import Image
+import hashlib
 from server import PromptServer
 from aiohttp import web
 import folder_paths
+import torch
 from .pysssss import get_ext_dir, get_comfy_dir, download_to_file, update_node_status, wait_for_async, get_extension_config, log
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy"))
 
@@ -53,6 +56,13 @@ async def tag(batch, model_name, threshold=0.35, character_threshold=0.85, exclu
     installed = list(get_installed_models())
     if not any(model_name + ".onnx" in s for s in installed):
         await download_model(model_name, client_id, node)
+
+    # unloaded = comfy.model_management.free_memory(1e30, torch.device(torch.cuda.current_device()))
+    # if unloaded is not None and len(unloaded) > 0:
+    #     torch.cuda.empty_cache()
+    #     torch.cuda.ipc_collect()
+    unloaded = comfy.model_management.unload_all_models()
+    print(f"Unloaded models: {unloaded}")
 
     name = os.path.join(models_dir, model_name + ".onnx")
     model = InferenceSession(name, providers=defaults["ortProviders"])
@@ -179,6 +189,16 @@ async def get_tags(request):
 
 
 class WD14Tagger:
+    def __init__(self):
+        self.hash = {}              # settings hash --> list of tuples (hash of images, tags)
+        self.max_cached = 100       # avoid oom
+
+    def get_cache_size(self):
+        items = 0
+        for settings_hash in self.hash:
+            items += len(self.hash[settings_hash])
+        return items
+
     @classmethod
     def INPUT_TYPES(s):
         extra = [name for name, _ in (os.path.splitext(m) for m in get_installed_models()) if name not in known_models]
@@ -192,7 +212,6 @@ class WD14Tagger:
                 "replace_underscore": ("BOOLEAN", {"default": defaults["replace_underscore"]}),
                 "trailing_comma": ("BOOLEAN", {"default": defaults["trailing_comma"]}),
                 "exclude_tags": ("STRING", {"default": defaults["exclude_tags"]}),
-
             },
             "optional": {
                 "batch_size": ("INT", {"default": 1, "min": 1, "max": 128}),
@@ -207,28 +226,70 @@ class WD14Tagger:
     CATEGORY = "image"
 
     def tag(self, image, model, threshold, character_threshold, exclude_tags="", replace_underscore=False, trailing_comma=False, batch_size=1):
+
         if not isinstance(image, list):
             images = [image]
         else:
             images = image
 
-        pbar = comfy.utils.ProgressBar(len(images))
-        tags = []
+        batches = []
         batch = []
+
+        mem = comfy.model_management.get_total_memory(torch_total_too=True)
+        total_vram = mem[0] / (1024 * 1024)
+        total_vram_torch = mem[1] / (1024 * 1024)
+        print("Total VRAM {:0.0f} MB, total Torch VRAM {:0.0f} MB".format(total_vram, total_vram_torch))
+
+        # build hash for cache
+        settings_hash = f'{len(model)}{hash(model)}-{threshold}-{character_threshold}-{len(exclude_tags)}{hash(exclude_tags)}-{replace_underscore}-{trailing_comma}-{batch_size}'
+        img_hashes = []
 
         for image in images:
             tensor = image*255
-            tensor = np.array(tensor, dtype=np.uint8)
+            tensor = np.array(tensor.cpu(), dtype=np.uint8)
 
             for i in range(tensor.shape[0]):
                 image = Image.fromarray(tensor[i])
+                img_hashes.append(hashlib.md5(image.tobytes()).hexdigest())
                 batch.append(image)
                 if len(batch) == batch_size or i == tensor.shape[0] -1:
-                    tags = tags + wait_for_async(lambda: tag(batch, model, threshold, character_threshold, exclude_tags, replace_underscore, trailing_comma))
-                    pbar.update(len(batch))
+                    batches.append(batch)
                     batch = []
 
+        img_hash = "-".join(img_hashes)
+
+        # check cache for entry
+        if settings_hash in self.hash:
+            for stored_tags in self.hash[settings_hash]:
+                if stored_tags[0] == img_hash:
+                    print(f'hashed tags: {stored_tags[1]}')
+                    return {"ui": {"tags": stored_tags[1]}, "result": (stored_tags[1],)}
+
+        pbar = comfy.utils.ProgressBar(len(images))
+        tags = []
+        for batch in batches:
+            tags = tags + wait_for_async(lambda: tag(batch, model, threshold, character_threshold, exclude_tags, replace_underscore, trailing_comma))
+            pbar.update(len(batch))
+
         print(tags)
+
+        # store tags in cache
+        if settings_hash in self.hash:
+            self.hash[settings_hash].insert(0, (img_hash, tags))
+        else:
+            self.hash[settings_hash] = [(img_hash, tags)]
+
+        # prune cache to avoid oom
+        while self.get_cache_size() > self.max_cached:
+            # TODO: improve by using LRU mechanism
+            for settings_hash in self.hash:
+                if len(self.hash[settings_hash]) > 0: del self.hash[settings_hash][-1]
+                if self.get_cache_size() <= self.max_cached: break
+
+        mem = comfy.model_management.get_total_memory(torch_total_too=True)
+        total_vram = mem[0] / (1024 * 1024)
+        total_vram_torch = mem[1] / (1024 * 1024)
+        print("Total VRAM {:0.0f} MB, total Torch VRAM {:0.0f} MB".format(total_vram, total_vram_torch))
 
         return {"ui": {"tags": tags}, "result": (tags,)}
 

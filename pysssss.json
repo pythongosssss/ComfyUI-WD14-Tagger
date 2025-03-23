@@ -2,11 +2,11 @@
 	"name": "WD14Tagger",
 	"logging": false,
 	"settings": {
-		"model": "wd-v1-4-moat-tagger-v2",
+		"model": "wd-eva02-large-tagger-v3",
 		"threshold": 0.35,
 		"character_threshold": 0.85,
 		"exclude_tags": "",
-		"ortProviders": ["CUDAExecutionProvider", "CPUExecutionProvider"],
+		"ortProviders": ["CUDAExecutionProvider","CPUExecutionProvider"],
 		"HF_ENDPOINT": "https://huggingface.co"
 	},
 	"models": {
