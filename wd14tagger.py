@@ -98,7 +98,7 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
     general = [item for item in result[general_index:character_index] if item[1] > threshold]
     character = [item for item in result[character_index:] if item[1] > character_threshold]
 
-    all = character + general
+    all = sorted(general + character, key=lambda x: x[1], reverse=True)
     remove = [s.strip() for s in exclude_tags.lower().split(",")]
     all = [tag for tag in all if tag[0] not in remove]
 
