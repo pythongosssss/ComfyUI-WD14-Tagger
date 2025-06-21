@@ -47,7 +47,7 @@ def get_installed_models():
     return models
 
 
-async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclude_tags="", replace_underscore=True, trailing_comma=False, client_id=None, node=None):
+async def tag(image, model_name, threshold=defaults["threshold"], character_threshold=defaults["character_threshold"], exclude_tags=defaults["exclude_tags"], replace_underscore=defaults["replace_underscore"], trailing_comma=defaults["trailing_comma"], client_id=None, node=None):
     if model_name.endswith(".onnx"):
         model_name = model_name[0:-5]
     installed = list(get_installed_models())
@@ -60,7 +60,7 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
     input = model.get_inputs()[0]
     height = input.shape[1]
 
-    # Reduce to max size and pad with white
+    # Resize and pad
     ratio = float(height)/max(image.size)
     new_size = tuple([int(x*ratio) for x in image.size])
     image = image.resize(new_size, Image.LANCZOS)
@@ -71,7 +71,7 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
     image = image[:, :, ::-1]  # RGB -> BGR
     image = np.expand_dims(image, 0)
 
-    # Read all tags from csv and locate start of each category
+    # Load tags
     tags = []
     general_index = None
     character_index = None
@@ -83,25 +83,46 @@ async def tag(image, model_name, threshold=0.35, character_threshold=0.85, exclu
                 general_index = reader.line_num - 2
             elif character_index is None and row[2] == "4":
                 character_index = reader.line_num - 2
-            if replace_underscore:
-                tags.append(row[1].replace("_", " "))
-            else:
-                tags.append(row[1])
+            tag_name = row[1].replace("_", " ") if replace_underscore else row[1]
+            tags.append(tag_name)
 
     label_name = model.get_outputs()[0].name
     probs = model.run([label_name], {input.name: image})[0]
-
     result = list(zip(tags, probs[0]))
 
-    # rating = max(result[:general_index], key=lambda x: x[1])
     general = [item for item in result[general_index:character_index] if item[1] > threshold]
     character = [item for item in result[character_index:] if item[1] > character_threshold]
 
-    all = character + general
-    remove = [s.strip() for s in exclude_tags.lower().split(",")]
-    all = [tag for tag in all if tag[0] not in remove]
+    all_tags = character + general
 
-    res = ("" if trailing_comma else ", ").join((item[0].replace("(", "\\(").replace(")", "\\)") + (", " if trailing_comma else "") for item in all))
+    # Step 1: Remove excluded tags
+    remove = [s.strip() for s in exclude_tags.lower().split(",")]
+    filtered = [(tag, score) for tag, score in all_tags if tag not in remove]
+
+    # Step 2: Deduplicate exact tags (keep highest score)
+    unique_tags = {}
+    for tag, score in filtered:
+        if tag not in unique_tags or score > unique_tags[tag]:
+            unique_tags[tag] = score
+
+    deduped = list(unique_tags.items())
+
+    # Step 3: Substring-based specificity filter
+    specific_tags = []
+    for tag, score in deduped:
+        is_subsumed = False
+        for other, _ in deduped:
+            if tag != other and tag in other and len(other) > len(tag):
+                is_subsumed = True
+                break
+        if not is_subsumed:
+            specific_tags.append((tag, score))
+
+    # Format result
+    res = ("" if trailing_comma else ", ").join(
+        tag.replace("(", "\\(").replace(")", "\\)") + (", " if trailing_comma else "")
+        for tag, _ in specific_tags
+    )
 
     print(res)
     return res
