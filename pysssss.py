@@ -202,9 +202,18 @@ async def download_to_file(url, destination, update_callback, is_ext_subpath=Tru
         if close_session and session is not None:
             await session.close()
 
-
-def wait_for_async(async_fn, loop=None):
-    return asyncio.run(async_fn())
+def wait_for_async(async_fn):
+    try:
+        import concurrent.futures
+        # Check if we're in a running event loop
+        asyncio.get_running_loop()
+        # We're in a running loop, so run the async function in a separate thread
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(asyncio.run, async_fn())
+            return future.result()  # This blocks until complete
+    except RuntimeError:
+        # No running loop, safe to use asyncio.run()
+        return asyncio.run(async_fn())
 
 def update_node_status(client_id, node, text, progress=None):
     if client_id is None:
