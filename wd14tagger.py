@@ -179,6 +179,7 @@ class WD14Tagger:
             "character_threshold": ("FLOAT", {"default": defaults["character_threshold"], "min": 0.0, "max": 1, "step": 0.05}),
             "replace_underscore": ("BOOLEAN", {"default": defaults["replace_underscore"]}),
             "trailing_comma": ("BOOLEAN", {"default": defaults["trailing_comma"]}),
+            "cache": ("BOOLEAN", {"default": False}),
             "exclude_tags": ("STRING", {"default": defaults["exclude_tags"]}),
         }}
 
@@ -189,7 +190,16 @@ class WD14Tagger:
 
     CATEGORY = "image"
 
-    def tag(self, image, model, threshold, character_threshold, exclude_tags="", replace_underscore=False, trailing_comma=False):
+    def tag(self, image, model, threshold, character_threshold, exclude_tags="", replace_underscore=False, trailing_comma=False, cache=False):
+        
+        hash = image.__hash__()
+
+        # use tags hasing
+        if cache and hasattr(self, "imghash") and self.imghash == hash:
+            print(hash)
+            return {"ui": {"tags": self.tags}, "result": (self.tags,)}
+
+        
         tensor = image*255
         tensor = np.array(tensor, dtype=np.uint8)
 
@@ -199,6 +209,8 @@ class WD14Tagger:
             image = Image.fromarray(tensor[i])
             tags.append(wait_for_async(lambda: tag(image, model, threshold, character_threshold, exclude_tags, replace_underscore, trailing_comma)))
             pbar.update(1)
+        self.imghash = hash  
+        self.tags = tags
         return {"ui": {"tags": tags}, "result": (tags,)}
 
 
