@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-wd14-tagger"
 description = "A ComfyUI extension allowing the interrogation of booru tags from images."
-version = "1.0.0"
+version = "1.0.1"
 license = { file = "LICENSE" }
 dependencies = ["onnxruntime"]
 
